@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdOrders  OrdemServico[] @relation("CreatedBy")
+  receivedOrders OrdemServico[] @relation("ReceivedBy")
+}
+
+model OrdemServico {
+  id                    String   @id @default(cuid())
+  numero                String   @unique
+  setor                 String?
+  fornecedor            String?
+  responsavel           String?
+  observacao            String?
+  status                String   @default("PENDENTE")
+
+  dataPedido            DateTime @default(now())
+  dataRecebimento       DateTime?
+
+  recebidoPorNome       String?
+  observacaoRecebimento String?
+
+  createdById           String?
+  receivedById          String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  createdBy  User? @relation("CreatedBy", fields: [createdById], references: [id])
+  receivedBy User? @relation("ReceivedBy", fields: [receivedById], references: [id])
+
+  itens OrdemServicoItem[]
+}
+
+model OrdemServicoItem {
+  id                 String   @id @default(cuid())
+  osId               String
+  nome               String
+  quantidade         Float
+  quantidadeRecebida Float    @default(0)
+  unidade            String
+  observacao         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  os OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+}
