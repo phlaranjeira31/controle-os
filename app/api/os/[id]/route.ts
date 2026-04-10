@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+type ItemTratado = {
+  nome: string;
+  quantidade: number;
+  quantidadeRecebida: number;
+  unidade: string;
+  observacao: string | null;
+};
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -58,7 +66,7 @@ export async function PATCH(
       );
     }
 
-    const itensTratados = itens.map((item: any) => ({
+    const itensTratados: ItemTratado[] = itens.map((item: any) => ({
       nome: String(item?.nome ?? "").trim(),
       quantidade: Number(item?.quantidade ?? 0),
       quantidadeRecebida: Number(item?.quantidadeRecebida ?? 0),
@@ -67,7 +75,7 @@ export async function PATCH(
     }));
 
     const itensInvalidos = itensTratados.some(
-      (item) =>
+      (item: ItemTratado) =>
         !item.nome ||
         !item.unidade ||
         Number.isNaN(item.quantidade) ||
