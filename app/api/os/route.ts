@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+type ItemTratado = {
+  nome: string;
+  quantidade: number;
+  quantidadeRecebida: number;
+  unidade: string;
+  observacao: string | null;
+};
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -27,7 +35,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const itensTratados = itens.map((item: any) => ({
+    const itensTratados: ItemTratado[] = itens.map((item: any) => ({
       nome: String(item?.nome ?? "").trim(),
       quantidade: Number(item?.quantidade ?? 0),
       quantidadeRecebida: 0,
@@ -36,7 +44,7 @@ export async function POST(req: Request) {
     }));
 
     const itensInvalidos = itensTratados.some(
-      (item) =>
+      (item: ItemTratado) =>
         !item.nome ||
         !item.unidade ||
         Number.isNaN(item.quantidade) ||
