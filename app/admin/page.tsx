@@ -9,6 +9,7 @@ import {
   FilePlus2,
   PackageCheck,
   PackageOpen,
+  Search,
   ShoppingCart,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
@@ -163,6 +164,29 @@ export default async function AdminPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <form
+  action="/admin/os"
+  method="GET"
+  className="flex items-center"
+>
+  <div className="flex overflow-hidden rounded-2xl border border-zinc-300 bg-white shadow-sm">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar : OS, setor ou material..."
+      className="w-72 border-0 bg-transparent px-4 py-3 text-sm text-zinc-900 outline-none"
+    />
+
+    <button
+      type="submit"
+      className="inline-flex items-center gap-2 border-l border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+    >
+      <Search size={18} />
+      <span>Buscar</span>
+    </button>
+  </div>
+</form>
+
               <Link
                 href="/admin/os/nova"
                 className="inline-flex items-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800"
@@ -269,7 +293,7 @@ export default async function AdminPage() {
                       Nº OS
                     </th>
                     <th className="px-5 py-4 text-sm font-semibold text-zinc-700">
-                      Fornecedor
+                      Setor / Obra
                     </th>
                     <th className="px-5 py-4 text-sm font-semibold text-zinc-700">
                       Responsável
@@ -300,7 +324,7 @@ export default async function AdminPage() {
                       </td>
 
                       <td className="px-5 py-4 text-sm text-zinc-700">
-                        {os.fornecedor || "-"}
+                        {os.setor || "-"}
                       </td>
 
                       <td className="px-5 py-4 text-sm text-zinc-700">

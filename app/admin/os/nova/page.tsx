@@ -3,6 +3,22 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  ArrowLeft,
+  Building2,
+  ClipboardList,
+  FilePlus2,
+  Hash,
+  Package2,
+  Plus,
+  Save,
+  ShoppingBag,
+  Trash2,
+  User2,
+  FileText,
+  Ruler,
+  Boxes,
+} from "lucide-react";
 
 type Item = {
   nome: string;
@@ -86,19 +102,31 @@ export default function NovaOSPage() {
   return (
     <div className="min-h-screen bg-zinc-100">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900">Nova OS</h1>
-            <p className="text-sm text-zinc-500">
-              Cadastre uma nova ordem de serviço com os materiais pedidos
-            </p>
+        <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl bg-zinc-100 p-3 text-zinc-700 shadow-sm">
+              <FilePlus2 size={24} />
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-red-600">
+                SEQUÓIA
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+                Nova OS
+              </h1>
+              <p className="mt-2 text-sm text-zinc-500 sm:text-base">
+                Cadastre uma nova ordem de serviço com os materiais pedidos
+              </p>
+            </div>
           </div>
 
           <Link
             href="/admin"
-            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-50"
           >
-            Voltar
+            <ArrowLeft size={17} />
+            <span>Voltar</span>
           </Link>
         </div>
       </header>
@@ -106,81 +134,97 @@ export default function NovaOSPage() {
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold text-zinc-900">
-              Dados principais
-            </h2>
+            <div className="mb-5 flex items-center gap-2 text-zinc-700">
+              <div className="rounded-lg bg-zinc-100 p-2">
+                <ClipboardList size={18} />
+              </div>
+              <h2 className="text-lg font-semibold text-zinc-900">
+                Dados principais
+              </h2>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-zinc-700">
-                  Número da OS *
+                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <Hash size={16} className="text-zinc-500" />
+                  <span>Número da OS *</span>
                 </label>
                 <input
                   type="text"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                   placeholder="Ex.: OS-001"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-zinc-700">
-                  Setor / Obra
+                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <Building2 size={16} className="text-zinc-500" />
+                  <span>Setor / Obra</span>
                 </label>
                 <input
                   type="text"
                   value={setor}
                   onChange={(e) => setSetor(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                   placeholder="Ex.: Obra A"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-zinc-700">
-                  Fornecedor
+                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <ShoppingBag size={16} className="text-zinc-500" />
+                  <span>Fornecedor</span>
                 </label>
                 <input
                   type="text"
                   value={fornecedor}
                   onChange={(e) => setFornecedor(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                   placeholder="Ex.: Material São José"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-zinc-700">
-                  Responsável
+                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <User2 size={16} className="text-zinc-500" />
+                  <span>Responsável</span>
                 </label>
                 <input
                   type="text"
                   value={responsavel}
                   onChange={(e) => setResponsavel(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                  className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                   placeholder="Ex.: Pedro"
                 />
               </div>
             </div>
 
             <div className="mt-4">
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                Observação
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <FileText size={16} className="text-zinc-500" />
+                <span>Observação</span>
               </label>
               <textarea
                 value={observacao}
                 onChange={(e) => setObservacao(e.target.value)}
-                className="min-h-[110px] w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                className="min-h-[110px] w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                 placeholder="Observações gerais da OS"
               />
             </div>
           </section>
 
           <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-900">Itens</h2>
+                <div className="mb-2 flex items-center gap-2 text-zinc-700">
+                  <div className="rounded-lg bg-zinc-100 p-2">
+                    <Package2 size={18} />
+                  </div>
+                  <h2 className="text-lg font-semibold text-zinc-900">Itens</h2>
+                </div>
+
                 <p className="text-sm text-zinc-500">
                   Adicione os materiais solicitados nesta OS
                 </p>
@@ -189,9 +233,10 @@ export default function NovaOSPage() {
               <button
                 type="button"
                 onClick={addItem}
-                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
               >
-                + Adicionar item
+                <Plus size={16} />
+                <span>Adicionar item</span>
               </button>
             </div>
 
@@ -209,16 +254,18 @@ export default function NovaOSPage() {
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
-                      className="text-sm font-medium text-red-600 hover:underline"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-red-600 transition hover:underline"
                     >
-                      Remover
+                      <Trash2 size={15} />
+                      <span>Remover</span>
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="md:col-span-1">
-                      <label className="mb-1 block text-sm font-medium text-zinc-700">
-                        Material *
+                      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                        <Boxes size={16} className="text-zinc-500" />
+                        <span>Material *</span>
                       </label>
                       <input
                         type="text"
@@ -226,14 +273,15 @@ export default function NovaOSPage() {
                         onChange={(e) =>
                           updateItem(index, "nome", e.target.value)
                         }
-                        className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                        className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                         placeholder="Ex.: Tijolo"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-zinc-700">
-                        Quantidade *
+                      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                        <Hash size={16} className="text-zinc-500" />
+                        <span>Quantidade *</span>
                       </label>
                       <input
                         type="number"
@@ -243,14 +291,15 @@ export default function NovaOSPage() {
                         onChange={(e) =>
                           updateItem(index, "quantidade", e.target.value)
                         }
-                        className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                        className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                         placeholder="Ex.: 150"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-zinc-700">
-                        Unidade *
+                      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                        <Ruler size={16} className="text-zinc-500" />
+                        <span>Unidade *</span>
                       </label>
                       <input
                         type="text"
@@ -258,15 +307,16 @@ export default function NovaOSPage() {
                         onChange={(e) =>
                           updateItem(index, "unidade", e.target.value)
                         }
-                        className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                        className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                         placeholder="Ex.: un, m, saco"
                       />
                     </div>
                   </div>
 
                   <div className="mt-4">
-                    <label className="mb-1 block text-sm font-medium text-zinc-700">
-                      Observação do item
+                    <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                      <FileText size={16} className="text-zinc-500" />
+                      <span>Observação do item</span>
                     </label>
                     <input
                       type="text"
@@ -274,7 +324,7 @@ export default function NovaOSPage() {
                       onChange={(e) =>
                         updateItem(index, "observacao", e.target.value)
                       }
-                      className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                      className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
                       placeholder="Ex.: Entrega urgente"
                     />
                   </div>
@@ -292,17 +342,19 @@ export default function NovaOSPage() {
           <div className="flex items-center justify-end gap-3">
             <Link
               href="/admin"
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
             >
-              Cancelar
+              <ArrowLeft size={16} />
+              <span>Cancelar</span>
             </Link>
 
             <button
               type="submit"
               disabled={loading}
-              className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Salvando..." : "Salvar OS"}
+              <Save size={16} />
+              <span>{loading ? "Salvando..." : "Salvar OS"}</span>
             </button>
           </div>
         </form>

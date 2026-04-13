@@ -2,6 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { Prisma } from "@prisma/client";
+import {
+  ArrowLeft,
+  Building2,
+  ClipboardList,
+  Filter,
+  FilePlus2,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  User2,
+} from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -35,9 +46,102 @@ function getStatusClasses(status: string) {
   }
 }
 
+function buildTokenVariants(token: string) {
+  const cleaned = token.trim().toLowerCase();
+  if (!cleaned) return [];
+
+  const variants = new Set<string>([cleaned]);
+
+  if (cleaned.endsWith("es") && cleaned.length > 3) {
+    variants.add(cleaned.slice(0, -2));
+  }
+
+  if (cleaned.endsWith("s") && cleaned.length > 2) {
+    variants.add(cleaned.slice(0, -1));
+  }
+
+  return Array.from(variants).filter(Boolean);
+}
+
+function buildSearchWhere(q: string): Prisma.OrdemServicoWhereInput {
+  const query = q.trim();
+
+  if (!query) return {};
+
+  const tokens = query
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const tokenFilters: Prisma.OrdemServicoWhereInput[] = tokens.map((token) => {
+    const variants = buildTokenVariants(token);
+
+    return {
+      OR: variants.flatMap((variant) => [
+        { numero: { contains: variant, mode: "insensitive" } },
+        { setor: { contains: variant, mode: "insensitive" } },
+        { observacao: { contains: variant, mode: "insensitive" } },
+        {
+          itens: {
+            some: {
+              nome: {
+                contains: variant,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
+        {
+          itens: {
+            some: {
+              observacao: {
+                contains: variant,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
+      ]),
+    };
+  });
+
+  return {
+    AND: [
+      {
+        OR: [
+          { numero: { contains: query, mode: "insensitive" } },
+          { setor: { contains: query, mode: "insensitive" } },
+          { observacao: { contains: query, mode: "insensitive" } },
+          {
+            itens: {
+              some: {
+                nome: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+          {
+            itens: {
+              some: {
+                observacao: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+        ],
+      },
+      ...tokenFilters,
+    ],
+  };
+}
+
 type SearchParams = Promise<{
   q?: string;
-  fornecedor?: string;
+  setor?: string;
   responsavel?: string;
   status?: string;
 }>;
@@ -56,24 +160,16 @@ export default async function ListaOSPage({
   const params = await searchParams;
 
   const q = String(params.q ?? "").trim();
-  const fornecedor = String(params.fornecedor ?? "").trim();
+  const setor = String(params.setor ?? "").trim();
   const responsavel = String(params.responsavel ?? "").trim();
   const status = String(params.status ?? "").trim();
 
   const where: Prisma.OrdemServicoWhereInput = {
-    ...(q
+    ...buildSearchWhere(q),
+    ...(setor
       ? {
-          OR: [
-            { numero: { contains: q, mode: "insensitive" } },
-            { setor: { contains: q, mode: "insensitive" } },
-            { observacao: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : {}),
-    ...(fornecedor
-      ? {
-          fornecedor: {
-            contains: fornecedor,
+          setor: {
+            contains: setor,
             mode: "insensitive",
           },
         }
@@ -89,7 +185,7 @@ export default async function ListaOSPage({
     ...(status ? { status } : {}),
   };
 
-  const [ordens, total, fornecedoresRows, responsaveisRows] = await Promise.all([
+  const [ordens, total, setoresRows, responsaveisRows] = await Promise.all([
     prisma.ordemServico.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -97,31 +193,20 @@ export default async function ListaOSPage({
     }),
     prisma.ordemServico.count({ where }),
     prisma.ordemServico.findMany({
-      select: { fornecedor: true },
-      distinct: ["fornecedor"],
-      orderBy: { fornecedor: "asc" },
-      where: {
-        fornecedor: {
-          not: null,
-        },
-      },
+      select: { setor: true },
+      distinct: ["setor"],
+      orderBy: { setor: "asc" },
+      where: { setor: { not: null } },
     }),
     prisma.ordemServico.findMany({
       select: { responsavel: true },
       distinct: ["responsavel"],
       orderBy: { responsavel: "asc" },
-      where: {
-        responsavel: {
-          not: null,
-        },
-      },
+      where: { responsavel: { not: null } },
     }),
   ]);
 
-  const fornecedores = fornecedoresRows
-    .map((row) => row.fornecedor)
-    .filter(Boolean) as string[];
-
+  const setores = setoresRows.map((row) => row.setor).filter(Boolean) as string[];
   const responsaveis = responsaveisRows
     .map((row) => row.responsavel)
     .filter(Boolean) as string[];
@@ -129,61 +214,85 @@ export default async function ListaOSPage({
   return (
     <div className="min-h-screen bg-zinc-100">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-900">
-              Ordens de Serviço
-            </h1>
-            <p className="text-sm text-zinc-500">
-              Visualize, busque e filtre todas as OS cadastradas
-            </p>
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl bg-zinc-100 p-3 text-zinc-700 shadow-sm">
+              <ClipboardList size={24} />
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-red-600">
+                SEQUÓIA
+              </p>
+
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+                Ordens de Serviço
+              </h1>
+
+              <p className="mt-2 text-sm text-zinc-500 sm:text-base">
+                Busque, filtre e acompanhe suas OS de forma rápida e organizada
+              </p>
+            </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/admin"
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-50"
             >
-              Voltar
+              <ArrowLeft size={17} />
+              <span>Voltar</span>
             </Link>
 
             <Link
               href="/admin/os/nova"
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800"
             >
-              Nova OS
+              <FilePlus2 size={17} />
+              <span>Nova OS</span>
             </Link>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-2xl bg-white p-5 shadow-sm">
-          <form className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-            <div className="lg:col-span-1">
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                Buscar
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center gap-2 text-zinc-700">
+            <div className="rounded-lg bg-zinc-100 p-2">
+              <SlidersHorizontal size={18} />
+            </div>
+            <p className="text-sm font-medium text-zinc-600">
+              Use os filtros abaixo para encontrar rapidamente uma OS
+            </p>
+          </div>
+
+          <form className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <Search size={16} className="text-zinc-500" />
+                <span>Buscar</span>
               </label>
               <input
                 type="text"
                 name="q"
                 defaultValue={q}
-                placeholder="Número, setor ou observação"
-                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                placeholder="Ex: 6289, patrimônio, caixa eletroduto..."
+                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                Fornecedor
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <Building2 size={16} className="text-zinc-500" />
+                <span>Setor / Obra</span>
               </label>
               <select
-                name="fornecedor"
-                defaultValue={fornecedor}
-                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                name="setor"
+                defaultValue={setor}
+                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
               >
                 <option value="">Todos</option>
-                {fornecedores.map((item) => (
+                {setores.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -192,13 +301,14 @@ export default async function ListaOSPage({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                Responsável
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <User2 size={16} className="text-zinc-500" />
+                <span>Responsável</span>
               </label>
               <select
                 name="responsavel"
                 defaultValue={responsavel}
-                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
               >
                 <option value="">Todos</option>
                 {responsaveis.map((item) => (
@@ -210,13 +320,14 @@ export default async function ListaOSPage({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                Status
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <ClipboardList size={16} className="text-zinc-500" />
+                <span>Status</span>
               </label>
               <select
                 name="status"
                 defaultValue={status}
-                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none focus:border-black"
+                className="w-full rounded-lg border border-zinc-300 p-3 text-black outline-none transition focus:border-black"
               >
                 <option value="">Todos</option>
                 <option value="PENDENTE">Pendente</option>
@@ -226,19 +337,21 @@ export default async function ListaOSPage({
               </select>
             </div>
 
-            <div className="flex items-end gap-3 lg:col-span-4">
+            <div className="flex items-end gap-3 md:col-span-2 lg:col-span-4">
               <button
                 type="submit"
-                className="rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
               >
-                Filtrar
+                <Filter size={16} />
+                <span>Filtrar</span>
               </button>
 
               <Link
                 href="/admin/os"
-                className="rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
-                Limpar
+                <RotateCcw size={16} />
+                <span>Limpar filtros</span>
               </Link>
             </div>
           </form>
@@ -269,7 +382,7 @@ export default async function ListaOSPage({
                       Nº OS
                     </th>
                     <th className="px-5 py-3 text-sm font-semibold text-zinc-700">
-                      Fornecedor
+                      Setor / Obra
                     </th>
                     <th className="px-5 py-3 text-sm font-semibold text-zinc-700">
                       Responsável
@@ -293,7 +406,7 @@ export default async function ListaOSPage({
                         {os.numero}
                       </td>
                       <td className="px-5 py-4 text-sm text-zinc-700">
-                        {os.fornecedor || "-"}
+                        {os.setor || "-"}
                       </td>
                       <td className="px-5 py-4 text-sm text-zinc-700">
                         {os.responsavel || "-"}
